@@ -1,0 +1,72 @@
+import itchat
+from itchat.content import TEXT
+import time
+import os
+
+def swipe(x, y, m, n, t):
+    os.system(f'adb shell input swipe {x} {y} {m} {n} {t}')
+
+def tap(x, y):
+    os.system(f'adb shell input tap {x} {y}')
+    
+def unlock():
+    os.system('adb shell input keyevent KEYCODE_POWER')
+    os.system('adb shell input swipe 300 1000 300 500')
+    time.sleep(0.2)
+    os.system('adb shell input tap 373 841')
+    os.system('adb shell input tap 542 847')
+    os.system('adb shell input tap 549 673')
+    os.system('adb shell input tap 197 640')
+    time.sleep(0.2)
+    os.system('adb shell input keyevent KEYCODE_HOME')
+    time.sleep(5)
+
+def lock():
+    os.system('adb shell input keyevent KEYCODE_HOME')
+    os.system('adb shell input keyevent KEYCODE_POWER')
+    
+def screen():
+    os.system('adb shell screencap -p sdcard/screen.png')
+    os.system(r'adb pull sdcard/screen.png D:\xxx\projects\weixin-projects')
+
+def login():
+    os.system('adb shell monkey -p com.alibaba.android.rimet -c android.intent.category.LAUNCHER 1')
+    time.sleep(5)
+    os.system('adb shell input swipe 300 1000 300 500')
+    os.system('adb shell input swipe 300 500 300 1000')
+    time.sleep(5)
+
+dingtalk = 'com.alibaba.android.rimet'
+def kill_app(app):
+    os.system(f'adb shell am force-stop {app}')
+
+@itchat.msg_register(TEXT)
+def dingtalk(msg):
+    def get_screen():
+        screen()
+        itchat.send('@img@%s' % 'screen.png')
+    if msg['Text'] == 'daka':
+        unlock()
+        login()
+        get_screen()
+        kill_app(dingtalk)
+        lock()
+    if msg['Text'] == 'click':
+        unlock()
+        login()   
+        # 进入打卡界面
+        tap(354, 1220)
+        time.sleep(10)
+        tap(86, 750)
+        time.sleep(10)
+        # 打卡
+        tap(355, 820)
+        # test
+        #swipe(630, 640, 50, 640, 800)
+        time.sleep(5)
+        get_screen()
+        kill_app(dingtalk)
+        lock()
+
+itchat.auto_login(True)
+itchat.run()
